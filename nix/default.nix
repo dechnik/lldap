@@ -1,4 +1,4 @@
-{ pkgs, nixpkgs, system, makeRustPlatform, rust-overlay }:
+{ lib, pkgs, nixpkgs, system, makeRustPlatform, rust-overlay }:
 let
   rustPkgs = import nixpkgs {
     inherit system;
@@ -18,6 +18,25 @@ let
     cargo = rustWithWasmTarget;
     rustc = rustWithWasmTarget;
   };
+  cargoToml = with builtins; fromTOML (readFile ../app/Cargo.toml);
+
+  wasmBindgenMatch =
+    cargoToml.dependencies.wasm-bindgen == "= ${pkgs.wasm-bindgen-cli.version}";
+
+  assertWasmBindgen = assert (lib.assertMsg wasmBindgenMatch ''
+    Due to instability in the Rust WASM ecosystem, the trunk build
+    tool enforces that the Cargo-dependency version of `wasm-bindgen`
+    MUST match the version of the CLI supplied in the environment.
+
+    This can get out of sync when nixpkgs is updated. To resolve it,
+    wasm-bindgen must be bumped in the Cargo.toml file and cargo needs
+    to be run to resolve the dependencies.
+
+    Versions of `wasm-bindgen` in Cargo.toml:
+
+      Expected: '= ${pkgs.wasm-bindgen-cli.version}'
+      Actual:   '${cargoToml.dependencies.wasm-bindgen}'
+  ''); pkgs.wasm-bindgen-cli;
 
   common = {
     version = "0.5.0";
@@ -32,7 +51,13 @@ let
       };
     };
 
-    nativeBuildInputs = [ pkgs.pkg-config pkgs.wasm-pack ];
+    nativeBuildInputs = with pkgs; [
+      pkg-config
+      wasm-pack
+      binaryen
+      assertWasmBindgen
+      wasm-bindgen-cli
+    ];
     PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
   };
 in
