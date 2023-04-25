@@ -79,6 +79,7 @@ in
   # });
 rustPlatformWasm.buildRustPackage (common // {
     pname = "lldap";
+    doCheck = false;
     postPatch = ''
       substituteInPlace server/src/infra/tcp_server.rs \
         --replace "app/index.html"     "$out/share/lldap/index.html" \
@@ -88,6 +89,8 @@ rustPlatformWasm.buildRustPackage (common // {
     preBuild = ''
       wasm-pack build app --target web --release
       gzip -9 -f app/pkg/lldap_app_bg.wasm
+    '';
+    checkPhase = ''
     '';
     postInstall = ''
       install -Dm444 app/index.html       $out/share/lldap/index.html

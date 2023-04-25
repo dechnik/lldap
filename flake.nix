@@ -15,26 +15,12 @@
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
       pkgsFor = nixpkgs.legacyPackages;
     in
-    {
-      # nixosModules.default = import nix/module.nix;
+    rec {
+      nixosModules.default = import nix/module.nix;
 
-      # packages = forAllSystems (system: let
-      #   code = pkgsFor.${system}.callPackage nix/default.nix { inherit nixpkgs system rust-overlay; };
-      # in rec {
-      #   backend = code.backend;
-      #   frontend = code.frontend;
-      #   all = pkgsFor.${system}.symlinkJoin {
-      #     name = "all";
-      #     paths = with code; [ backend frontend ];
-      #   };
-      #   default = all;
-      # });
       packages = forAllSystems (system: {
         default = pkgsFor.${system}.callPackage nix/default.nix { inherit nixpkgs system rust-overlay; };
       });
-
-      # devShells = forAllSystems (system: {
-      #   default = pkgsFor.${system}.callPackage nix/shell.nix { };
-      # });
+      hydraJobs = packages;
     };
 }
