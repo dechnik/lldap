@@ -81,9 +81,16 @@ in {
       description = "File path containing lldap jwt secret";
       default = null;
     };
+    openFirewall = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to open port in the firewall for the server.";
+    };
   };
   config = lib.mkIf cfg.enable {
     # environment.systemPackages = [ pkgs.lldap ];
+    networking.firewall =
+      lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.ldapPort cfg.httpPort ]; };
 
     systemd.services.lldap = {
       wantedBy = [ "multi-user.target" ];
