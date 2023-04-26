@@ -1,7 +1,4 @@
 self: { config, lib, pkgs, ... }:
-
-with lib;
-
 let
   cfg = config.services.lldap;
   configFile = pkgs.writeText "lldap_config.toml" ''
@@ -23,64 +20,64 @@ let
   '';
 in {
   options.services.lldap = {
-    enable = mkEnableOption "lldap";
-    ldapHost = mkOption {
-      type = types.str;
+    enable = lib.mkEnableOption "lldap";
+    ldapHost = lib.mkOption {
+      type = lib.types.str;
       default = "0.0.0.0";
       description = "Ldap host address to bind to.";
     };
-    ldapPort = mkOption {
-      type = types.int;
+    ldapPort = lib.mkOption {
+      type = lib.types.int;
       default = 3890;
       description = "Ldap port number to bind to.";
     };
-    httpHost = mkOption {
-      type = types.str;
+    httpHost = lib.mkOption {
+      type = lib.types.str;
       default = "0.0.0.0";
       description = "Http web frontend address to bind to.";
     };
-    httpPort = mkOption {
-      type = types.int;
+    httpPort = lib.mkOption {
+      type = lib.types.int;
       default = 17170;
       description = "Http web frontend port number to bind to.";
     };
-    httpUrl = mkOption {
-      type = types.str;
+    httpUrl = lib.mkOption {
+      type = lib.types.str;
       default = "https://lldap.example.com";
       description = "The public URL of the server, for password reset links.";
     };
-    ldapBaseDn = mkOption {
-      type = types.str;
+    ldapBaseDn = lib.mkOption {
+      type = lib.types.str;
       default = "dc=example,dc=com";
       description = "Base DN for LDAP";
     };
-    ldapUserDn = mkOption {
-      type = types.str;
+    ldapUserDn = lib.mkOption {
+      type = lib.types.str;
       default = "admin";
       description = "Admin username";
     };
-    ldapUserEmail = mkOption {
-      type = types.str;
+    ldapUserEmail = lib.mkOption {
+      type = lib.types.str;
       default = "admin@example.com";
       description = "Admin email";
     };
-    dataDir = mkOption {
-      type = types.path;
+    dataDir = lib.mkOption {
+      type = lib.types.path;
       description = "File path containing user pass";
       default = "/var/lib/lldap";
     };
-    userPassFile = mkOption {
-      type = types.path;
+    userPassFile = lib.mkOption {
+      type = lib.types.path;
       description = "File path containing user pass";
       default = null;
     };
-    jwtSecretFile = mkOption {
-      type = types.path;
+    jwtSecretFile = lib.mkOption {
+      type = lib.types.path;
       description = "File path containing lldap jwt secret";
       default = null;
     };
   };
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     environment.systemPackages = [ pkgs.lldap ];
 
     systemd.services.lldap = {
