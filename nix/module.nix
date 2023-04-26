@@ -21,6 +21,11 @@ let
 in {
   options.services.lldap = {
     enable = lib.mkEnableOption "lldap";
+    package = lib.mkOption {
+      type = lib.types.package;
+      default = self.packages.${pkgs.system}.default;
+      description = "The package implementing lldap";
+    };
     ldapHost = lib.mkOption {
       type = lib.types.str;
       default = "0.0.0.0";
@@ -78,17 +83,17 @@ in {
     };
   };
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.lldap ];
+    # environment.systemPackages = [ pkgs.lldap ];
 
     systemd.services.lldap = {
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       preStart = ''
-        ln -sf ${pkgs.lldap}/share/lldap ${cfg.dataDir}/app
+        ln -sf ${cfg.package}/share/lldap ${cfg.dataDir}/app
         ln -sf ${configFile} ${cfg.dataDir}/lldap_config.toml
       '';
       serviceConfig = {
-        ExecStart = "${pkgs.lldap}/bin/lldap run";
+        ExecStart = "${cfg.package}/bin/lldap run";
         LimitNOFILE = 1048576;
         LimitNPROC = 64;
         NoNewPrivileges = true;
