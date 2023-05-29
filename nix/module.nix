@@ -96,6 +96,8 @@ in {
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       preStart = ''
+        rm -rf ${cfg.dataDir}/app
+        rm -rf ${cfg.dataDir}/lldap_config.toml
         ln -sf ${cfg.package}/share/lldap ${cfg.dataDir}/app
         ln -sf ${configFile} ${cfg.dataDir}/lldap_config.toml
       '';
