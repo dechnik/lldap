@@ -1,3 +1,5 @@
+[![hydra status](https://img.shields.io/endpoint?url=https://hydra.dechnik.net/job/lldap/main/x86_64-linux.default/shield)](https://hydra.dechnik.net/jobset/lldap/main#tabs-jobs)
+
 <h1 align="center">lldap - Light LDAP implementation for authentication</h1>
 
 <p align="center">
@@ -175,7 +177,7 @@ Then you can build the frontend files with
 
 ```shell
 ./app/build.sh
-````
+```
 
 (you'll need to run this after every front-end change to update the WASM
 package served).
