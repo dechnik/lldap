@@ -128,6 +128,8 @@ services:
     ports:
       # For LDAP
       - "3890:3890"
+      # For LDAPS (LDAP Over SSL), enable port if LLDAP_LDAPS_OPTIONS__ENABLED set true, look env below
+      #- "6360:6360"
       # For the web front-end
       - "17170:17170"
     volumes:
@@ -141,6 +143,10 @@ services:
       - LLDAP_JWT_SECRET=REPLACE_WITH_RANDOM
       - LLDAP_LDAP_USER_PASS=REPLACE_WITH_PASSWORD
       - LLDAP_LDAP_BASE_DN=dc=example,dc=com
+      # If using LDAPS, set enabled true and configure cert and key path
+      # - LLDAP_LDAPS_OPTIONS__ENABLED=true
+      # - LLDAP_LDAPS_OPTIONS__CERT_FILE=/path/to/certfile.crt
+      # - LLDAP_LDAPS_OPTIONS__KEY_FILE=/path/to/keyfile.key
       # You can also set a different database:
       # - LLDAP_DATABASE_URL=mysql://mysql-user:password@mysql-server/my-database
       # - LLDAP_DATABASE_URL=postgres://postgres-user:password@postgres-server/my-database
@@ -273,6 +279,7 @@ folder for help with:
 - [Jitsi Meet](example_configs/jitsi_meet.conf)
 - [KeyCloak](example_configs/keycloak.md)
 - [Matrix](example_configs/matrix_synapse.yml)
+- [Mealie](example_configs/mealie.md)
 - [Nextcloud](example_configs/nextcloud.md)
 - [Nexus](example_configs/nexus.md)
 - [Organizr](example_configs/Organizr.md)
