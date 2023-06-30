@@ -1,7 +1,8 @@
-use super::{
+use crate::domain::{
     error::Result,
     types::{
-        Group, GroupDetails, GroupId, JpegPhoto, User, UserAndGroups, UserColumn, UserId, Uuid,
+        AttributeType, Group, GroupDetails, GroupId, JpegPhoto, User, UserAndGroups, UserColumn,
+        UserId, Uuid,
     },
 };
 use async_trait::async_trait;
@@ -122,18 +123,49 @@ pub struct UpdateGroupRequest {
     pub display_name: Option<String>,
 }
 
+#[derive(PartialEq, Eq, Debug, Serialize, Deserialize, Clone)]
+pub struct AttributeSchema {
+    pub name: String,
+    //TODO: pub aliases: Vec<String>,
+    pub attribute_type: AttributeType,
+    pub is_list: bool,
+    pub is_visible: bool,
+    pub is_editable: bool,
+    pub is_hardcoded: bool,
+}
+
+#[derive(PartialEq, Eq, Debug, Serialize, Deserialize, Clone)]
+pub struct AttributeList {
+    pub attributes: Vec<AttributeSchema>,
+}
+
+impl AttributeList {
+    pub fn get_attribute_type(&self, name: &str) -> Option<(AttributeType, bool)> {
+        self.attributes
+            .iter()
+            .find(|a| a.name == name)
+            .map(|a| (a.attribute_type, a.is_list))
+    }
+}
+
+#[derive(PartialEq, Eq, Debug, Serialize, Deserialize, Clone)]
+pub struct Schema {
+    pub user_attributes: AttributeList,
+    pub group_attributes: AttributeList,
+}
+
 #[async_trait]
 pub trait LoginHandler: Send + Sync {
     async fn bind(&self, request: BindRequest) -> Result<()>;
 }
 
 #[async_trait]
-pub trait GroupListerBackendHandler {
+pub trait GroupListerBackendHandler: SchemaBackendHandler {
     async fn list_groups(&self, filters: Option<GroupRequestFilter>) -> Result<Vec<Group>>;
 }
 
 #[async_trait]
-pub trait GroupBackendHandler {
+pub trait GroupBackendHandler: SchemaBackendHandler {
     async fn get_group_details(&self, group_id: GroupId) -> Result<GroupDetails>;
     async fn update_group(&self, request: UpdateGroupRequest) -> Result<()>;
     async fn create_group(&self, group_name: &str) -> Result<GroupId>;
@@ -141,7 +173,7 @@ pub trait GroupBackendHandler {
 }
 
 #[async_trait]
-pub trait UserListerBackendHandler {
+pub trait UserListerBackendHandler: SchemaBackendHandler {
     async fn list_users(
         &self,
         filters: Option<UserRequestFilter>,
@@ -150,7 +182,7 @@ pub trait UserListerBackendHandler {
 }
 
 #[async_trait]
-pub trait UserBackendHandler {
+pub trait UserBackendHandler: SchemaBackendHandler {
     async fn get_user_details(&self, user_id: &UserId) -> Result<User>;
     async fn create_user(&self, request: CreateUserRequest) -> Result<()>;
     async fn update_user(&self, request: UpdateUserRequest) -> Result<()>;
@@ -161,6 +193,11 @@ pub trait UserBackendHandler {
 }
 
 #[async_trait]
+pub trait SchemaBackendHandler {
+    async fn get_schema(&self) -> Result<Schema>;
+}
+
+#[async_trait]
 pub trait BackendHandler:
     Send
     + Sync
@@ -168,6 +205,7 @@ pub trait BackendHandler:
     + UserBackendHandler
     + UserListerBackendHandler
     + GroupListerBackendHandler
+    + SchemaBackendHandler
 {
 }
 
@@ -201,6 +239,10 @@ mockall::mock! {
         async fn get_user_groups(&self, user_id: &UserId) -> Result<HashSet<GroupDetails>>;
         async fn add_user_to_group(&self, user_id: &UserId, group_id: GroupId) -> Result<()>;
         async fn remove_user_from_group(&self, user_id: &UserId, group_id: GroupId) -> Result<()>;
+    }
+    #[async_trait]
+    impl SchemaBackendHandler for TestBackendHandler {
+        async fn get_schema(&self) -> Result<Schema>;
     }
     #[async_trait]
     impl BackendHandler for TestBackendHandler {}
